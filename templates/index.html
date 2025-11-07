@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI TravelMate</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styl.css') }}">
+</head>
+<body>
+  <h1>AI TravelMate 🌍</h1>
+  <form action="/recommend" method="POST">
+    <input name="location" placeholder="Enter your location" required><br>
+    <input name="interest" placeholder="Your interests (e.g. nature, history)" required><br>
+    <input name="budget" placeholder="Budget (low/medium/high)" required><br>
+    <button type="submit">Generate Itinerary</button>
+  </form>
+  <a href="/chat.html">Chat with AI 🤖</a>
+</body>
+</html>
