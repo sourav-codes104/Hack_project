@@ -1,18 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AI TravelMate</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styl.css') }}">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI TravelMate — Dashboard</title>
+  <link rel="stylesheet" href="../static/css/styl.css">
 </head>
 <body>
-  <h1>AI TravelMate 🌍</h1>
-  <form action="/recommend" method="POST">
-    <input name="location" placeholder="Enter your location" required><br>
-    <input name="interest" placeholder="Your interests (e.g. nature, history)" required><br>
-    <input name="budget" placeholder="Budget (low/medium/high)" required><br>
-    <button type="submit">Generate Itinerary</button>
-  </form>
-  <a href="/chat.html">Chat with AI 🤖</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <h1 class="logo">AI <span>TravelMate</span></h1>
+      <nav>
+        <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="#dashboard" class="nav-link">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="dashboard" class="container dashboard-section">
+      <h3 class="section-title">Dashboard — Choose your role</h3>
+      <div class="cards">
+        <a class="card" href="{{ url_for('user_dashboard') }}" aria-label="Open user dashboard">
+          <div class="card-icon" aria-hidden="true">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+              <path d="M4 20a8 8 0 0 1 16 0"/>
+            </svg>
+          </div>
+          <h4>User</h4>
+          <p>Explore personalized itineraries, discover local spots and save your favourite experiences.</p>
+          <button class="card-btn">Enter as User</button>
+        </a>
+
+        <a class="card card-admin" href="{{ url_for('admin_dashboard') }}" aria-label="Open admin dashboard">
+          <div class="card-icon" aria-hidden="true">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2l2.5 4.5L19 8l-3 2.5L16 15l-4-2-4 2 .5-4.5L5 8l4.5-1.5L12 2z"/>
+            </svg>
+          </div>
+          <h4>Admin</h4>
+          <p>Manage destinations, improve digital visibility and review analytics to help local businesses grow.</p>
+          <button class="card-btn">Enter as Admin</button>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© <span id="year"></span> AI TravelMate — Built with ❤ to surface hidden gems.</small>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>

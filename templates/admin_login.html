@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - AI TravelMate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: url("{{ url_for('static', filename='css/css6.jpg') }}") no-repeat center center/cover;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated background elements */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+      top: -200px;
+      left: -200px;
+      border-radius: 50%;
+      animation: float 15s ease-in-out infinite;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 70%);
+      bottom: -150px;
+      right: -150px;
+      border-radius: 50%;
+      animation: float 12s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(50px, 50px) scale(1.1); }
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: rgba(42, 54, 71, 0.85);
+      backdrop-filter: blur(20px);
+      padding: 48px 40px;
+      border-radius: 24px;
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.4s ease;
+    }
+
+    .login-box:hover {
+      transform: translateY(-8px);
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+
+    .logo-section {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .icon-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #ec4899 0%, #d946a3 100%);
+      border-radius: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .icon-wrapper svg {
+      width: 40px;
+      height: 40px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    h2 {
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 15px;
+      font-weight: 400;
+      margin-bottom: 32px;
+    }
+
+    .flash {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      text-align: center;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #ec4899;
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+    }
+
+    button {
+      width: 100%;
+      background: linear-gradient(135deg, #ec4899 0%, #d946a3 100%);
+      color: white;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(236, 72, 153, 0.3);
+      margin-top: 24px;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #d946a3 0%, #c026d3 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(236, 72, 153, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .back-link a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .back-link a:hover {
+      color: #ec4899;
+    }
+
+    /* Brand logo at top */
+    .brand-logo {
+      position: absolute;
+      top: 32px;
+      left: 32px;
+      z-index: 3;
+    }
+
+    .brand-logo h1 {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .brand-logo .ai {
+      color: #8b5cf6;
+    }
+
+    .brand-logo .travel {
+      background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  </style>
+</head>
+<body>
+  <div class="brand-logo">
+    <h1><span class="ai">AI</span> <span class="travel">TravelMate</span></h1>
+  </div>
+
+  <div class="login-container">
+    <div class="login-box">
+      <div class="logo-section">
+        <div class="icon-wrapper">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+        </div>
+        <h2>Admin Login</h2>
+        <p class="subtitle">Manage destinations and analytics</p>
+      </div>
+
+      <!-- Flash messages would appear here -->
+      <!-- <div class="flash">Invalid credentials. Please try again.</div> -->
+
+      <form method="POST" action="{{ url_for('admin_login') }}">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Enter your username" required>
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit">Sign In</button>
+      </form>
+
+      <div class="back-link">
+        <a href="{{ url_for('home') }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back to Home
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
