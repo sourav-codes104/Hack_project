@@ -3,7 +3,7 @@ import os
 import sqlite3
 from utils.database_setup import init_db, save_feedback
 from model.chatbot_logic import get_chat_response
-from model.recommender import get_recommendations
+from model.recommender import get_recommendations   # ✅ Gemini AI se connected hai
 from utils.weather_app import get_weather
 
 # -----------------------------------------------------
@@ -18,7 +18,6 @@ app.secret_key = "super_secret_key_2025"
 
 # Initialize database
 init_db()
-
 
 # -----------------------------------------------------
 # 🔹 HOME PAGE
@@ -41,7 +40,6 @@ def user_dashboard():
 # -----------------------------------------------------
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_login():
-    # Always show login page first (clear any old session)
     session.pop('admin_logged_in', None)
 
     if request.method == 'POST':
@@ -111,21 +109,33 @@ def chat_api():
 
 
 # -----------------------------------------------------
-# 🔹 RECOMMENDATION RESULT
+# 🔹 GEMINI AI TRAVEL RECOMMENDATION RESULT
 # -----------------------------------------------------
 @app.route('/recommend', methods=['POST'])
 def recommend():
     location = request.form.get('location')
     interest = request.form.get('interest')
     budget = request.form.get('budget')
+    travel_mode = request.form.get('travel_mode', 'car')
 
-    results = get_recommendations(location, interest, budget)
-    weather = get_weather(location)
+    # ✅ Gemini AI call
+    ai_results = get_recommendations(location, interest, budget, travel_mode)
 
-    return render_template('result.html',
-                           location=location,
-                           results=results,
-                           weather=weather)
+    # Optional weather info (agar tu dikhana chahe)
+    try:
+        weather = get_weather(location)
+    except:
+        weather = None
+
+    return render_template(
+        'result.html',
+        location=location,
+        interest=interest,
+        budget=budget,
+        travel_mode=travel_mode,
+        results=ai_results,
+        weather=weather
+    )
 
 
 # -----------------------------------------------------
@@ -152,5 +162,5 @@ def test():
 # 🔹 RUN APP
 # -----------------------------------------------------
 if __name__ == '__main__':
-    print("✅ AI TravelMate running on http://127.0.0.1:5000/")
+    print("✅ AI TravelMate running with Gemini AI...")
     app.run(debug=True)

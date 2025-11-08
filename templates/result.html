@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Travel Recommendations</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .recommend-box {
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px auto;
+      width: 70%;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .ai-output {
+      text-align: left;
+      white-space: pre-line;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    a {
+      color: #a5b4fc;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+    a:hover { color: white; }
+  </style>
+</head>
+<body>
+  <h1>🌍 AI-Powered Travel Recommendations</h1>
+
+  <div class="recommend-box">
+    <h2>Your Preferences</h2>
+    <p><strong>📍 Location:</strong> {{ location }}</p>
+    <p><strong>🎯 Interest:</strong> {{ interest }}</p>
+    <p><strong>💰 Budget:</strong> {{ budget }}</p>
+    <p><strong>🚗 Mode of Travel:</strong> {{ travel_mode }}</p>
+  </div>
+
+  <div class="recommend-box">
+    <h2>✨ AI Suggestions</h2>
+    {% if results %}
+      <div class="ai-output">{{ results | safe }}</div>
+    {% else %}
+      <p>⚠️ Sorry, I couldn’t fetch AI recommendations right now.</p>
+    {% endif %}
+  </div>
+
+  <a href="{{ url_for('user_dashboard') }}">🔙 Back to Dashboard</a>
+</body>
+</html>
