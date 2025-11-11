@@ -17,3 +17,5 @@ __pycache__/
 # Ignore OS-specific junk
 .DS_Store
 Thumbs.db
+static/css/Downloads/
+static/css/Downloads/

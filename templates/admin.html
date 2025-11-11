@@ -1,94 +1,369 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard - AI TravelMate</title>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard — AI TravelMate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: "Poppins", sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: white;
-      text-align: center;
-      padding: 40px;
+      font-family: 'Poppins', sans-serif;
+      background: url("{{ url_for('static', filename='css/unique2.jpg') }}") no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
       min-height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
     }
-
-    h1 {
-      color: #f472b6;
-      font-size: 2.2rem;
-      margin-bottom: 10px;
+    
+    header {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.9);
+      padding: 20px 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-
-    p {
-      color: #94a3b8;
-      margin-bottom: 20px;
+    
+    header h1 {
+      color: #a5b4fc;
+      font-weight: 600;
+      font-size: 1.8em;
+      margin: 0;
     }
-
-    table {
+    
+    .logout-btn {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s ease;
+    }
+    
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+    }
+    
+    main {
+      width: 100%;
+      max-width: 1400px;
       margin: 0 auto;
-      width: 80%;
-      border-collapse: collapse;
+      padding: 30px 20px;
+      flex: 1;
+    }
+    
+    .user-count {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      text-align: center;
+      background: rgba(30, 41, 59, 0.8);
+      padding: 15px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0;
       background: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      margin-bottom: 25px;
+      backdrop-filter: blur(10px);
     }
-
-    th, td {
-      padding: 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 15px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.3s;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
     }
-
-    th {
-      background: rgba(255,255,255,0.1);
-      color: #f9a8d4;
+    
+    .tab:hover { 
+      background: rgba(255, 255, 255, 0.08); 
+    }
+    
+    .tab.active {
+      border-bottom: 3px solid #818cf8;
+      color: #a5b4fc;
+      background: rgba(129, 140, 248, 0.1);
+    }
+    
+    .tab-content {
+      display: none;
+      background: rgba(30, 41, 59, 0.9);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+    }
+    
+    .tab-content.active { 
+      display: block; 
+    }
+    
+    .tab-content h2 {
+      margin-bottom: 20px;
+      color: #a5b4fc;
+      font-size: 1.5em;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    
+    table th, table td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px;
+      text-align: left;
+    }
+    
+    table th {
+      background: rgba(99, 102, 241, 0.3);
       font-weight: 600;
     }
-
-    tr:hover {
-      background: rgba(255,255,255,0.08);
+    
+    table tr:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
-
-    .logout {
-      display: inline-block;
-      margin-top: 30px;
-      background: linear-gradient(135deg, #f472b6, #be185d);
+    
+    .database-actions {
+      margin-top: 20px;
+    }
+    
+    .database-actions p {
+      margin-bottom: 20px;
+      font-size: 1.05em;
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .btn-action {
+      background: #6366f1;
       color: white;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 8px;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      cursor: pointer;
       transition: 0.3s;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
     }
-
-    .logout:hover {
-      background: linear-gradient(135deg, #ec4899, #9d174d);
+    
+    .btn-action:hover { 
+      background: #4f46e5;
       transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-action:active {
+      transform: translateY(0);
+    }
+    
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 20px;
+      color: #94a3b8;
+      font-size: 14px;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    
+    #dbResult {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 4px solid #6366f1;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+    }
+    
+    @media (max-width: 768px) {
+      header {
+        padding: 15px 20px;
+      }
+      
+      header h1 {
+        font-size: 1.3em;
+      }
+      
+      .tabs {
+        flex-direction: column;
+      }
+      
+      .tab {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+      }
+      
+      .tab.active {
+        border-bottom: none;
+        border-left: 3px solid #818cf8;
+      }
+      
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Welcome, Admin 👑</h1>
-  <p>Here’s your dashboard — manage feedback and insights below.</p>
+  <header>
+    <h1>👋 Welcome {{ admin_name or "Admin" }}</h1>
+    <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
+  </header>
 
-  <table>
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Message</th>
-      <th>Date</th>
-    </tr>
-    {% for f in feedbacks %}
-    <tr>
-      <td>{{ f[0] }}</td>
-      <td>{{ f[1] }}</td>
-      <td>{{ f[2] }}</td>
-      <td>{{ f[3] }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="4">No feedback available 😔</td></tr>
-    {% endfor %}
-  </table>
+  <main>
+    <p class="user-count">Total Registered Users: {{ user_count }}</p>
 
-  <a href="{{ url_for('admin_logout') }}" class="logout">Logout</a>
+    <div class="tabs">
+      <div class="tab active" onclick="showTab(event, 'user')">👥 User Details</div>
+      <div class="tab" onclick="showTab(event, 'feedback')">💬 User Feedback</div>
+      <div class="tab" onclick="showTab(event, 'database')">🗃 Manage Database</div>
+    </div>
+
+    <div id="user" class="tab-content active">
+      <h2>👥 User Details</h2>
+      <table>
+        <tr><th>Username</th><th>Mobile</th><th>Created At</th></tr>
+        {% for user in users %}
+        <tr>
+          <td>{{ user[0] }}</td>
+          <td>{{ user[1] }}</td>
+          <td>{{ user[2] }}</td>
+        </tr>
+        {% endfor %}
+        {% if not users %}
+        <tr><td colspan="3">No users found.</td></tr>
+        {% endif %}
+      </table>
+    </div>
+
+    <div id="feedback" class="tab-content">
+      <h2>💬 User Feedback</h2>
+      {% if feedbacks %}
+      <table>
+        <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr>
+        {% for fb in feedbacks %}
+        <tr><td>{{ fb[0] }}</td><td>{{ fb[1] }}</td><td>{{ fb[2] }}</td><td>{{ fb[3] }}</td></tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p>No feedback found.</p>
+      {% endif %}
+    </div>
+
+    <div id="database" class="tab-content">
+      <h2>🗃 Manage Database</h2>
+      <div class="database-actions">
+        <p>Perform database maintenance tasks:</p>
+
+        <div class="button-grid">
+          <button class="btn-action" onclick="manageDB('clean_duplicates')">
+            <span>🧹</span>
+            <span>Delete Duplicate Primary Keys</span>
+          </button>
+          <button class="btn-action" onclick="manageDB('check_integrity')">
+            <span>🔍</span>
+            <span>Check Integrity</span>
+          </button>
+          <button class="btn-action" onclick="manageDB('export_data')">
+            <span>📤</span>
+            <span>Export Users</span>
+          </button>
+          <button class="btn-action" onclick="window.location.href='/admin/export_feedback'">
+            <span>📤</span>
+            <span>Export Feedback</span>
+          </button>
+        </div>
+
+        <div id="dbResult"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © {{ 2025 }} AI TravelMate | Designed by Sourav
+  </footer>
+
+  <script>
+    function showTab(event, tabId) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    async function manageDB(action) {
+      const resultDiv = document.getElementById('dbResult');
+      resultDiv.innerHTML = '⏳ Processing...';
+      resultDiv.style.color = '#a5b4fc';
+
+      try {
+        // For export actions, redirect directly
+        if (action === 'export_data') {
+          window.location.href = `/admin/manage_db/${action}`;
+          resultDiv.innerHTML = '✅ Export started! Your download should begin shortly.';
+          return;
+        }
+
+        // For other actions, use fetch
+        const response = await fetch(`/admin/manage_db/${action}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          resultDiv.innerHTML = data.message;
+          // Reload page after successful operation to refresh data
+          if (action === 'clean_duplicates') {
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+          }
+        } else {
+          resultDiv.innerHTML = `❌ Error: ${data.message}`;
+          resultDiv.style.color = '#f87171';
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `❌ Error: ${error.message}`;
+        resultDiv.style.color = '#f87171';
+      }
+    }
+  </script>
 </body>
 </html>

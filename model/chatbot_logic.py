@@ -1,12 +1,34 @@
-def get_chat_response(user_input):
-    user_input = user_input.lower()
-    if "hello" in user_input or "hi" in user_input:
-        return "Hey traveler! 👋 Ready for your next adventure?"
-    elif "place" in user_input:
-        return "You can visit Rajwada Palace or Choral Dam near Indore!"
-    elif "weather" in user_input:
-        return "It's a sunny day ☀️, perfect for exploration!"
-    elif "thank" in user_input:
-        return "You're welcome! 😊"
-    else:
-        return "I'm still learning! Try asking about places, weather, or greetings."
+import os
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+# ✅ Load your Gemini API key from .env
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# ✅ Initialize Gemini model (latest stable)
+model = genai.GenerativeModel("models/gemini-2.0-flash")
+
+def get_chat_response(user_msg):
+    try:
+        # 🧠 Read the context file
+        with open("data/travel_context.txt", "r", encoding="utf-8") as f:
+            context = f.read()
+
+        # Combine user input + your dataset
+        prompt = f"""
+        You are an AI Travel Assistant.
+        Use the context data below to answer questions accurately and naturally.
+
+        Context:
+        {context}
+
+        User: {user_msg}
+        """
+
+        # Send to Gemini AI
+        response = model.generate_content(prompt)
+        return response.text.strip()
+
+    except Exception as e:
+        return f"⚠️ Error: {str(e)}"

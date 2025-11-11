@@ -2,41 +2,136 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AI Travel Recommendations</title>
+  <title>AI-Powered Travel Recommendations</title>
   <style>
     body {
-      background: linear-gradient(135deg, #1e293b, #334155);
-      color: white;
+      background: url("{{ url_for('static', filename='css/css12.jpg') }}") no-repeat center center/cover;
+      color: #f1f5f9;
       font-family: 'Poppins', sans-serif;
       text-align: center;
       padding: 40px;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-bottom: 30px;
+      color: #e2e8f0;
+      letter-spacing: 0.5px;
     }
 
     .recommend-box {
-      background: rgba(255,255,255,0.05);
-      padding: 20px;
-      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(51, 65, 85, 0.88));
+      padding: 30px;
+      border-radius: 20px;
       margin: 20px auto;
-      width: 70%;
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      width: 80%;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(16px);
     }
 
-    .ai-output {
-      text-align: left;
-      white-space: pre-line;
-      line-height: 1.6;
+    h2 {
+      color: #a5b4fc;
+      margin-bottom: 15px;
+    }
+
+    p {
+      margin: 6px 0;
+      font-size: 16px;
       color: #e2e8f0;
     }
 
-    a {
-      color: #a5b4fc;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 20px;
+    .ai-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    a:hover { color: white; }
+    .ai-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    }
+
+    a {
+      color: #818cf8;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 25px;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    a:hover {
+      color: #ffffff;
+    }
+
+    .btn-action {
+      margin-top: 20px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+      transition: 0.3s ease;
+    }
+
+    .btn-action:hover {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      transform: translateY(-2px);
+    }
+
+    .stop-btn {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      margin-left: 10px;
+    }
+
+    .toggle-btn {
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      margin-left: 10px;
+    }
+
+    /* Feedback form */
+    .feedback-form {
+      background: rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 25px;
+      width: 60%;
+      margin: 50px auto;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .feedback-form input, .feedback-form textarea {
+      width: 90%;
+      margin: 10px auto;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-size: 15px;
+      font-family: 'Poppins';
+    }
+
+    .feedback-form button {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s ease;
+    }
+
+    .feedback-form button:hover {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+    }
   </style>
 </head>
 <body>
@@ -44,21 +139,169 @@
 
   <div class="recommend-box">
     <h2>Your Preferences</h2>
-    <p><strong>📍 Location:</strong> {{ location }}</p>
-    <p><strong>🎯 Interest:</strong> {{ interest }}</p>
-    <p><strong>💰 Budget:</strong> {{ budget }}</p>
-    <p><strong>🚗 Mode of Travel:</strong> {{ travel_mode }}</p>
+    <p>📍 <strong>Location:</strong> {{ location }}</p>
+    <p>🎯 <strong>Interest:</strong> {{ interest }}</p>
+    <p>💰 <strong>Budget:</strong> {{ budget }}</p>
+    <p>🚗 <strong>Mode of Travel:</strong> {{ travel_mode }}</p>
   </div>
 
   <div class="recommend-box">
     <h2>✨ AI Suggestions</h2>
     {% if results %}
-      <div class="ai-output">{{ results | safe }}</div>
+      {% set suggestions = results.split('\n') %}
+      {% for line in suggestions %}
+        {% if line.strip() %}
+          <div class="ai-card">
+            <p>{{ line | safe }}</p>
+          </div>
+        {% endif %}
+      {% endfor %}
     {% else %}
-      <p>⚠️ Sorry, I couldn’t fetch AI recommendations right now.</p>
+      <p>⚠ Sorry, I couldn’t fetch AI recommendations right now.</p>
     {% endif %}
   </div>
 
+  <div style="margin-top: 25px;">
+    <button onclick="speakText(`{{ results | safe | replace('`','\\`') | replace('\n', ' ') }}`)" 
+            class="btn-action">
+      🔊 Listen to Recommendations
+    </button>
+
+    <button onclick="stopSpeaking()" class="btn-action stop-btn">
+      ⏹ Stop Voice
+    </button>
+
+    <button onclick="toggleAutoSpeak()" class="btn-action toggle-btn" id="toggleBtn">
+      🔈 Auto-Speak: ON
+    </button>
+  </div>
+
+  <br><br>
   <a href="{{ url_for('user_dashboard') }}">🔙 Back to Dashboard</a>
+
+  <!-- 💬 Ask AI More Questions -->
+  <div style="margin-top: 50px;">
+    <h2>💬 Ask AI More Questions</h2>
+    <textarea id="chatInput" placeholder="Ask about destinations, safety, weather, budget tips..." rows="3"
+      style="width: 70%; border-radius: 8px; padding: 10px; border: none;"></textarea><br>
+    <button onclick="sendChat()" style="margin-top:10px; padding: 10px 20px; border:none; border-radius:6px;
+      background:#6366f1; color:white; cursor:pointer;">Ask AI</button>
+
+    <div id="chatResponse" style="margin-top: 20px; text-align: left; width:70%; margin:auto;
+      background: rgba(255,255,255,0.1); padding:15px; border-radius:12px;"></div>
+  </div>
+
+  <!-- ✨ User Feedback Section -->
+  <div class="feedback-form">
+    <h2>💭 Share Your Experience</h2>
+    <form action="{{ url_for('feedback') }}" method="POST">
+      <input type="text" name="name" placeholder="Your Name" required><br>
+      <input type="email" name="email" placeholder="Your Email" required><br>
+      <textarea name="message" rows="4" placeholder="Your feedback about these travel suggestions..." required></textarea><br>
+      <button type="submit">📨 Submit Feedback</button>
+    </form>
+  </div>
+
+  <script>
+    let englishVoice = null;
+    let voicesLoaded = false;
+    let autoSpeakEnabled = true;
+
+    // ✅ Load voices with retry (fix for Brave/Chrome)
+    async function loadEnglishVoice(retry = 0) {
+      const voices = window.speechSynthesis.getVoices();
+
+      if (voices.length > 0) {
+        englishVoice =
+          voices.find(v => v.name.includes("Google US English")) ||
+          voices.find(v => v.name.includes("Microsoft Aria")) ||
+          voices.find(v => v.lang === "en-IN") ||
+          voices.find(v => v.lang === "en-US") ||
+          voices.find(v => v.name.toLowerCase().includes("english")) ||
+          voices[0];
+        voicesLoaded = true;
+        console.log("✅ Voice loaded:", englishVoice.name);
+        return;
+      }
+
+      if (retry < 10) {
+        console.log("⏳ Waiting for voices...");
+        setTimeout(() => loadEnglishVoice(retry + 1), 300);
+      } else {
+        alert("⚠️ Your browser has speech disabled. Please enable it in Brave or Chrome settings.");
+      }
+    }
+
+    // 🎧 Speak text
+    async function speakText(text) {
+      if (!autoSpeakEnabled) return;
+      if (!text || !text.trim()) {
+        console.warn("⚠️ No text provided to speakText");
+        return;
+      }
+
+      await loadEnglishVoice();
+      window.speechSynthesis.cancel();
+
+      const cleanText = text
+        .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "")
+        .replace(/<[^>]+>/g, "")
+        .replace(/[*#`_~\-•→]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const utter = new SpeechSynthesisUtterance(cleanText);
+      utter.voice = englishVoice;
+      utter.lang = englishVoice.lang || "en-IN";
+      utter.rate = 0.93;
+      utter.pitch = 1.02;
+      utter.volume = 1.0;
+      utter.onerror = e => console.error("Speech error:", e);
+      utter.onend = () => console.log("✅ Finished speaking.");
+      window.speechSynthesis.speak(utter);
+    }
+
+    // 🛑 Stop voice
+    function stopSpeaking() {
+      window.speechSynthesis.cancel();
+      console.log("🛑 Speech stopped.");
+    }
+
+    // 🎚️ Toggle Auto-Speak
+    function toggleAutoSpeak() {
+      autoSpeakEnabled = !autoSpeakEnabled;
+      const btn = document.getElementById("toggleBtn");
+      btn.textContent = autoSpeakEnabled ? "🔈 Auto-Speak: ON" : "🔇 Auto-Speak: OFF";
+      btn.style.background = autoSpeakEnabled
+        ? "linear-gradient(135deg, #14b8a6, #0d9488)"
+        : "linear-gradient(135deg, #475569, #334155)";
+    }
+
+    // 💬 Send Chat
+    async function sendChat() {
+      const msg = document.getElementById("chatInput").value.trim();
+      if (!msg) return;
+
+      const response = await fetch("/ai_chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ msg }),
+      });
+
+      const data = await response.json();
+      const replyBox = document.getElementById("chatResponse");
+      replyBox.innerHTML = "<b>AI:</b> " + data.reply;
+      speakText(data.reply);
+    }
+
+    // 🔄 Load voices once page interacts
+    document.addEventListener("click", () => {
+      if (!voicesLoaded) {
+        loadEnglishVoice();
+      }
+    });
+
+    window.speechSynthesis.onvoiceschanged = loadEnglishVoice;
+  </script>
 </body>
 </html>

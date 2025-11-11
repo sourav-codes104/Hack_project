@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Chat — TravelMate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 30%, #1e293b, #0f172a);
+      font-family: 'Poppins', sans-serif;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 25px 0;
+      font-size: 1.8rem;
+      color: #a5b4fc;
+      letter-spacing: 1px;
+    }
+
+    .chat-container {
+      width: 90%;
+      max-width: 750px;
+      height: 75vh;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    /* Chat bubbles */
+    .user-message, .ai-message {
+      margin: 10px 0;
+      padding: 14px 18px;
+      border-radius: 14px;
+      max-width: 80%;
+      line-height: 1.6;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .user-message {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .ai-message {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom-left-radius: 4px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Markdown AI formatting */
+    .ai-message h2, .ai-message h3 {
+      color: #a5b4fc;
+      margin: 8px 0 4px;
+    }
+
+    .ai-message ul {
+      margin-left: 24px;
+      list-style: disc;
+    }
+
+    .ai-message strong {
+      color: #ffffff;
+    }
+
+    /* Input area */
+    .input-container {
+      width: 90%;
+      max-width: 750px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 15px auto;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      padding: 10px 16px;
+    }
+
+    .input-container input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 16px;
+      color: white;
+      padding: 10px;
+    }
+
+    .input-container button {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+
+    .input-container button:hover {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>💬 AI Travel Assistant</h1>
+
+  <div class="chat-container" id="chat-container">
+    <div class="ai-message">
+      👋 Hey traveler! I'm your AI assistant. Ask me about travel destinations, weather, or trip planning!
+    </div>
+  </div>
+
+  <div class="input-container">
+    <input type="text" id="user-input" placeholder="Type your message..." onkeydown="if(event.key==='Enter') sendMessage()">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+<div style="margin-top:10px;">
+  <button onclick="clearChat()" style="
+    background:rgba(255,255,255,0.1);
+    border:none;
+    padding:8px 14px;
+    border-radius:10px;
+    color:#cbd5e1;
+    cursor:pointer;">🗑 Clear Chat</button>
+</div>
+
+
+<script>
+  async function sendMessage() {
+    const userInput = document.getElementById('user-input');
+    const chatContainer = document.getElementById('chat-container');
+    const message = userInput.value.trim();
+    if (!message) return;
+
+    // 🧍 User bubble
+    const userDiv = document.createElement('div');
+    userDiv.className = 'user-message';
+    userDiv.textContent = message;
+    chatContainer.appendChild(userDiv);
+
+    userInput.value = '';
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // ⏳ Loading bubble
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'ai-message';
+    aiDiv.textContent = '💭 Thinking...';
+    chatContainer.appendChild(aiDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    try {
+      const res = await fetch('/ai_chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ msg: message })
+      });
+      const data = await res.json();
+      const reply = data.reply || "⚠️ Sorry, no response.";
+
+      // Typing animation effect
+      aiDiv.innerHTML = '';
+      let idx = 0;
+      const typing = setInterval(() => {
+        aiDiv.innerHTML = reply.slice(0, idx);
+        idx++;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        if (idx >= reply.length) clearInterval(typing);
+      }, 10);
+    } catch (err) {
+      aiDiv.textContent = "⚠️ Connection error.";
+    }
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+  function clearChat() {
+    document.getElementById('chat-container').innerHTML =
+      '<div class="ai-message">🧭 Chat cleared. How can I assist you again?</div>';
+  }
+</script>
+
+</body>
+</html>

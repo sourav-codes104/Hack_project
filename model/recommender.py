@@ -1,6 +1,13 @@
+from model.ner_utils import extract_places
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+
+def detect_location_from_text(user_input):
+    places = extract_places(user_input)
+    if places:
+        return places[0]  # just take first one
+    return None
 
 # ✅ Load .env from root directory
 env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
