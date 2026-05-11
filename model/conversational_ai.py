@@ -9,10 +9,8 @@ env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv(env_path)
 
 api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise ValueError("❌ GEMINI_API_KEY not found in .env file!")
-
-genai.configure(api_key=api_key)
+if api_key:
+    genai.configure(api_key=api_key)
 
 # ✅ Updated Gemini Model (Stable)
 model = genai.GenerativeModel(
@@ -43,7 +41,7 @@ Brief engaging intro.
 )
 
 # ✅ Use Gemini's built-in chat session for proper conversation memory
-chat_session = model.start_chat(history=[])
+chat_session = model.start_chat(history=[]) if api_key else None
 
 
 # -----------------------------------------------------
@@ -56,7 +54,13 @@ def chat_with_gemini(user_input):
     """
     global chat_session
 
+    if not api_key:
+        return "Gemini AI is not configured yet. Please set GEMINI_API_KEY in the deployment environment."
+
     try:
+        if chat_session is None:
+            chat_session = model.start_chat(history=[])
+
         # 💬 Send message using chat session (maintains context automatically)
         response = chat_session.send_message(user_input)
 

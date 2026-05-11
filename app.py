@@ -20,7 +20,7 @@ app = Flask(
     template_folder=os.path.join(os.getcwd(), 'templates'),
     static_folder=os.path.join(os.getcwd(), 'static')
 )
-app.secret_key = "super_secret_key_2025"
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 
 # ✅ Load environment variables
 load_dotenv()
