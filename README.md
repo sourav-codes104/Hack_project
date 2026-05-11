@@ -40,6 +40,16 @@ python app.py
 
 ---
 
+## ☁️ Deploy to Render
+- Ensure the project is pushed to a Git repository connected to Render
+- Add the following environment variables in Render:
+  - `GEMINI_API_KEY`
+  - `GOOGLE_CLIENT_ID`
+  - `GOOGLE_CLIENT_SECRET`
+- Render will install dependencies from `requirements.txt` and run the app with Gunicorn
+
+---
+
 ## 📁 Project structure
 - `app.py` — Flask application entry point
 - `model/` — NLP, recommender, and chatbot logic

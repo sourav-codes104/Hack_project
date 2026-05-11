@@ -543,4 +543,8 @@ def test():
 # ---------------- MAIN ----------------
 if __name__ == '__main__':
     print("✅ AI TravelMate running with Gemini AI + OAuth + Admin Tools + TTS")
-    app.run(debug=True)
+    app.run(
+        host='0.0.0.0',
+        port=int(os.getenv('PORT', 5000)),
+        debug=os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    )
