@@ -1,369 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Dashboard — AI TravelMate</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - TravelMate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    :root { --primary: #ea580c; --secondary: #1e293b; --bg-color: #f1f5f9; --surface: #ffffff; --text-main: #334155; --text-muted: #64748b; --border: #e2e8f0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; }
     
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: url("{{ url_for('static', filename='css/unique2.jpg') }}") no-repeat center center fixed;
-      background-size: cover;
-      color: #fff;
-      min-height: 100vh;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
+    .sidebar { width: 260px; background: var(--secondary); color: white; padding: 24px; display: flex; flex-direction: column; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 40px; }
+    .logo span { color: white; }
     
-    header {
-      width: 100%;
-      background: rgba(30, 41, 59, 0.9);
-      padding: 20px 50px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+    .nav-menu { flex: 1; }
+    .nav-item { padding: 12px 16px; margin-bottom: 8px; border-radius: 4px; cursor: pointer; color: #cbd5e1; font-weight: 600; transition: 0.2s; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
     
-    header h1 {
-      color: #a5b4fc;
-      font-weight: 600;
-      font-size: 1.8em;
-      margin: 0;
-    }
+    .logout-btn { background: #e11d48; color: white; padding: 12px; text-align: center; border-radius: 4px; text-decoration: none; font-weight: 600; }
     
-    .logout-btn {
-      background: linear-gradient(135deg, #ef4444, #b91c1c);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.3s ease;
-    }
+    .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+    .header-area { margin-bottom: 30px; }
+    .header-area h1 { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--secondary); margin-bottom: 8px; }
     
-    .logout-btn:hover {
-      transform: translateY(-2px);
-      background: linear-gradient(135deg, #dc2626, #991b1b);
-    }
+    .stat-card { background: var(--surface); padding: 24px; border-radius: 8px; border: 1px solid var(--border); border-top: 4px solid var(--primary); display: inline-block; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .stat-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+    .stat-val { font-size: 36px; font-weight: 700; color: var(--secondary); }
+
+    .content-panel { display: none; background: var(--surface); padding: 30px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+    .content-panel.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .content-panel h2 { font-size: 20px; color: var(--secondary); margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
     
-    main {
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 30px 20px;
-      flex: 1;
-    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 12px; background: var(--bg-color); }
+    tr:last-child td { border-bottom: none; }
     
-    .user-count {
-      font-weight: bold;
-      font-size: 1.2rem;
-      margin-bottom: 20px;
-      text-align: center;
-      background: rgba(30, 41, 59, 0.8);
-      padding: 15px;
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
-    }
-    
-    .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 0;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 25px;
-      backdrop-filter: blur(10px);
-    }
-    
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 15px 20px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: 0.3s;
-      border-bottom: 3px solid transparent;
-      white-space: nowrap;
-    }
-    
-    .tab:hover { 
-      background: rgba(255, 255, 255, 0.08); 
-    }
-    
-    .tab.active {
-      border-bottom: 3px solid #818cf8;
-      color: #a5b4fc;
-      background: rgba(129, 140, 248, 0.1);
-    }
-    
-    .tab-content {
-      display: none;
-      background: rgba(30, 41, 59, 0.9);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
-    }
-    
-    .tab-content.active { 
-      display: block; 
-    }
-    
-    .tab-content h2 {
-      margin-bottom: 20px;
-      color: #a5b4fc;
-      font-size: 1.5em;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    
-    table th, table td {
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 12px;
-      text-align: left;
-    }
-    
-    table th {
-      background: rgba(99, 102, 241, 0.3);
-      font-weight: 600;
-    }
-    
-    table tr:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .database-actions {
-      margin-top: 20px;
-    }
-    
-    .database-actions p {
-      margin-bottom: 20px;
-      font-size: 1.05em;
-    }
-    
-    .button-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    
-    .btn-action {
-      background: #6366f1;
-      color: white;
-      border: none;
-      padding: 14px 20px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.3s;
-      font-size: 15px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
-    }
-    
-    .btn-action:hover { 
-      background: #4f46e5;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4);
-    }
-    
-    .btn-action:active {
-      transform: translateY(0);
-    }
-    
-    footer {
-      width: 100%;
-      text-align: center;
-      padding: 20px;
-      color: #94a3b8;
-      font-size: 14px;
-      background: rgba(30, 41, 59, 0.8);
-      backdrop-filter: blur(10px);
-    }
-    
-    #dbResult {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 8px;
-      background: rgba(99, 102, 241, 0.1);
-      border-left: 4px solid #6366f1;
-      min-height: 50px;
-      display: flex;
-      align-items: center;
-    }
-    
-    @media (max-width: 768px) {
-      header {
-        padding: 15px 20px;
-      }
-      
-      header h1 {
-        font-size: 1.3em;
-      }
-      
-      .tabs {
-        flex-direction: column;
-      }
-      
-      .tab {
-        border-bottom: none;
-        border-left: 3px solid transparent;
-      }
-      
-      .tab.active {
-        border-bottom: none;
-        border-left: 3px solid #818cf8;
-      }
-      
-      .button-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .btn-action { background: var(--bg-color); border: 1px solid var(--border); color: var(--secondary); padding: 16px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-action:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+    #dbResult { padding: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 4px; margin-top: 16px; display: none; font-size: 14px; font-weight: 500; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>👋 Welcome {{ admin_name or "Admin" }}</h1>
-    <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
-  </header>
+  <div class="sidebar">
+    <div class="logo">Travel<span>Mate</span></div>
+    <div class="nav-menu">
+      <div class="nav-item active" onclick="showPanel('users', this)">Registered Users</div>
+      <div class="nav-item" onclick="showPanel('feedback', this)">User Feedback</div>
+      <div class="nav-item" onclick="showPanel('database', this)">System Tools</div>
+    </div>
+    <a href="/logout" class="logout-btn">Secure Logout</a>
+  </div>
 
-  <main>
-    <p class="user-count">Total Registered Users: {{ user_count }}</p>
-
-    <div class="tabs">
-      <div class="tab active" onclick="showTab(event, 'user')">👥 User Details</div>
-      <div class="tab" onclick="showTab(event, 'feedback')">💬 User Feedback</div>
-      <div class="tab" onclick="showTab(event, 'database')">🗃 Manage Database</div>
+  <div class="main-content">
+    <div class="header-area">
+      <h1>Admin Control Center</h1>
+      <p style="color:var(--text-muted);">Manage users and system integrity</p>
     </div>
 
-    <div id="user" class="tab-content active">
-      <h2>👥 User Details</h2>
+    <div class="stat-card">
+      <div class="stat-title">Total Registered Users</div>
+      <div class="stat-val">{{ user_count }}</div>
+    </div>
+
+    <div id="users" class="content-panel active">
+      <h2>Registered Accounts</h2>
       <table>
-        <tr><th>Username</th><th>Mobile</th><th>Created At</th></tr>
+        <tr><th>ID</th><th>Username</th><th>Email</th></tr>
         {% for user in users %}
-        <tr>
-          <td>{{ user[0] }}</td>
-          <td>{{ user[1] }}</td>
-          <td>{{ user[2] }}</td>
-        </tr>
+        <tr><td>{{ user[0] }}</td><td>{{ user[1] }}</td><td>{{ user[2] if user[2] else 'Not Provided' }}</td></tr>
+        {% else %}
+        <tr><td colspan="3" style="text-align:center;">No users registered.</td></tr>
         {% endfor %}
-        {% if not users %}
-        <tr><td colspan="3">No users found.</td></tr>
-        {% endif %}
       </table>
     </div>
 
-    <div id="feedback" class="tab-content">
-      <h2>💬 User Feedback</h2>
-      {% if feedbacks %}
+    <div id="feedback" class="content-panel">
+      <h2>User Feedback Logs</h2>
       <table>
-        <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr>
+        <tr><th>Name</th><th>Email</th><th>Message</th><th>Date Submitted</th></tr>
         {% for fb in feedbacks %}
         <tr><td>{{ fb[0] }}</td><td>{{ fb[1] }}</td><td>{{ fb[2] }}</td><td>{{ fb[3] }}</td></tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align:center;">No feedback recorded.</td></tr>
         {% endfor %}
       </table>
-      {% else %}
-      <p>No feedback found.</p>
-      {% endif %}
     </div>
 
-    <div id="database" class="tab-content">
-      <h2>🗃 Manage Database</h2>
-      <div class="database-actions">
-        <p>Perform database maintenance tasks:</p>
-
-        <div class="button-grid">
-          <button class="btn-action" onclick="manageDB('clean_duplicates')">
-            <span>🧹</span>
-            <span>Delete Duplicate Primary Keys</span>
-          </button>
-          <button class="btn-action" onclick="manageDB('check_integrity')">
-            <span>🔍</span>
-            <span>Check Integrity</span>
-          </button>
-          <button class="btn-action" onclick="manageDB('export_data')">
-            <span>📤</span>
-            <span>Export Users</span>
-          </button>
-          <button class="btn-action" onclick="window.location.href='/admin/export_feedback'">
-            <span>📤</span>
-            <span>Export Feedback</span>
-          </button>
-        </div>
-
-        <div id="dbResult"></div>
+    <div id="database" class="content-panel">
+      <h2>Database Management</h2>
+      <div class="action-grid">
+        <button class="btn-action" onclick="manageDB('clean_duplicates')">Clean Duplicates</button>
+        <button class="btn-action" onclick="manageDB('check_integrity')">Verify Integrity</button>
+        <button class="btn-action" onclick="window.location.href='/admin/manage_db/export_data'">Export Users (CSV)</button>
+        <button class="btn-action" onclick="window.location.href='/admin/export_feedback'">Export Feedback (CSV)</button>
       </div>
+      <div id="dbResult"></div>
     </div>
-  </main>
-
-  <footer>
-    © {{ 2025 }} AI TravelMate | Designed by Sourav
-  </footer>
+  </div>
 
   <script>
-    function showTab(event, tabId) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
+    function showPanel(id, el) {
+      document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      el.classList.add('active');
     }
 
     async function manageDB(action) {
-      const resultDiv = document.getElementById('dbResult');
-      resultDiv.innerHTML = '⏳ Processing...';
-      resultDiv.style.color = '#a5b4fc';
-
+      const resEl = document.getElementById('dbResult');
+      resEl.style.display = 'block';
+      resEl.innerText = 'Processing request...';
       try {
-        // For export actions, redirect directly
-        if (action === 'export_data') {
-          window.location.href = `/admin/manage_db/${action}`;
-          resultDiv.innerHTML = '✅ Export started! Your download should begin shortly.';
-          return;
-        }
-
-        // For other actions, use fetch
         const response = await fetch(`/admin/manage_db/${action}`);
         const data = await response.json();
-        
-        if (response.ok) {
-          resultDiv.innerHTML = data.message;
-          // Reload page after successful operation to refresh data
-          if (action === 'clean_duplicates') {
-            setTimeout(() => {
-              window.location.reload();
-            }, 2000);
-          }
-        } else {
-          resultDiv.innerHTML = `❌ Error: ${data.message}`;
-          resultDiv.style.color = '#f87171';
-        }
-      } catch (error) {
-        resultDiv.innerHTML = `❌ Error: ${error.message}`;
-        resultDiv.style.color = '#f87171';
-      }
+        resEl.innerText = data.message;
+      } catch (e) { resEl.innerText = "Error completing operation."; }
     }
   </script>
+
+  <!-- Chatbot UI -->
+  <div class="chatbot-container">
+    <div class="chatbot-toggle">
+      <svg viewBox="0 0 24 24"><path d="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M20,16H5.2L4,17.2V4h16V16z M7,9h10v2H7V9z M7,12h7v2H7V12z"/></svg>
+    </div>
+    <div class="chatbot-window">
+      <div class="chatbot-header">
+        <h3>Travel AI Assistant</h3>
+        <span class="chatbot-close">&times;</span>
+      </div>
+      <div class="chatbot-messages">
+        <div class="message bot">👋 Hi! I'm your AI travel assistant. How can I help you plan your journey today?</div>
+      </div>
+      <div class="chatbot-input-area">
+        <input type="text" class="chatbot-input" placeholder="Ask me anything...">
+        <button class="chatbot-send">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='javascript/chat.js') }}"></script>
 </body>
 </html>

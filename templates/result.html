@@ -2,306 +2,344 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AI-Powered Travel Recommendations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Recommendations - TravelMate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    body {
-      background: url("{{ url_for('static', filename='css/css12.jpg') }}") no-repeat center center/cover;
-      color: #f1f5f9;
-      font-family: 'Poppins', sans-serif;
-      text-align: center;
-      padding: 40px;
-      margin: 0;
+    :root {
+      --primary: #ea580c;
+      --primary-hover: #c2410c;
+      --secondary: #1e293b;
+      --bg-color: #f8fafc;
+      --surface: #ffffff;
+      --text-main: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
     }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+    
+    .nav-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .logo { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; }
+    .logo span { color: var(--secondary); }
+    
+    .page-header { background: var(--secondary); color: white; padding: 40px 20px; text-align: center; }
+    .page-header h1 { font-family: 'Playfair Display', serif; font-size: 36px; margin-bottom: 12px; }
+    .page-header p { font-size: 16px; color: #cbd5e1; }
+    .weather-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; margin-top: 16px; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); }
 
-    h1 {
-      font-size: 2em;
-      margin-bottom: 30px;
-      color: #e2e8f0;
-      letter-spacing: 0.5px;
-    }
+    .container { max-width: 1200px; margin: -30px auto 40px; padding: 0 20px; position: relative; z-index: 10; }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 40px; }
+    .card { background: var(--surface); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
+    .card-img { height: 220px; width: 100%; object-fit: cover; }
+    
+    .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .card-title { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--secondary); font-weight: 700; margin-bottom: 8px; }
+    .card-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; flex: 1; }
+    
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .tag { background: var(--bg-color); border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--text-main); }
+    .tag.cost { background: #fff1f2; color: #e11d48; border-color: #fecdd3; }
+    
+    .btn-plan { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 4px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-plan:hover { background: var(--primary-hover); }
 
-    .recommend-box {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(51, 65, 85, 0.88));
-      padding: 30px;
-      border-radius: 20px;
-      margin: 20px auto;
-      width: 80%;
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(16px);
-    }
+    .maps-section { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+    @media(max-width: 768px) { .maps-section { grid-template-columns: 1fr; } }
+    .map-card { background: var(--surface); padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+    .map-card h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--secondary); margin-bottom: 16px; }
+    .map-view { height: 350px; width: 100%; border-radius: 4px; border: 1px solid var(--border); z-index: 1; }
 
-    h2 {
-      color: #a5b4fc;
-      margin-bottom: 15px;
-    }
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 9999; }
+    .loading-spinner { width: 50px; height: 50px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--secondary); }
 
-    p {
-      margin: 6px 0;
-      font-size: 16px;
-      color: #e2e8f0;
-    }
+    /* Map Customizations */
+    .map-card { position: relative; }
+    .map-card.fullscreen { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999 !important; border-radius: 0 !important; margin: 0 !important; display: flex; flex-direction: column; background: var(--surface); padding: 10px; }
+    .map-card.fullscreen .map-view { flex: 1 !important; height: auto !important; border-radius: 4px; }
+    .map-card.fullscreen h2 { display: none; }
+    .maximize-btn { position: absolute; top: 20px; right: 20px; z-index: 1000; background: white; border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .maximize-btn:hover { background: var(--bg-color); }
 
-    .ai-card {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin: 12px 0;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .ai-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
-    }
-
-    a {
-      color: #818cf8;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 25px;
-      font-weight: 500;
-      transition: color 0.3s ease;
-    }
-
-    a:hover {
-      color: #ffffff;
-    }
-
-    .btn-action {
-      margin-top: 20px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-      transition: 0.3s ease;
-    }
-
-    .btn-action:hover {
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
-      transform: translateY(-2px);
-    }
-
-    .stop-btn {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      margin-left: 10px;
-    }
-
-    .toggle-btn {
-      background: linear-gradient(135deg, #14b8a6, #0d9488);
-      margin-left: 10px;
-    }
-
-    /* Feedback form */
-    .feedback-form {
-      background: rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 25px;
-      width: 60%;
-      margin: 50px auto;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .feedback-form input, .feedback-form textarea {
-      width: 90%;
-      margin: 10px auto;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      outline: none;
-      font-size: 15px;
-      font-family: 'Poppins';
-    }
-
-    .feedback-form button {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff;
-      border: none;
-      padding: 10px 22px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.3s ease;
-    }
-
-    .feedback-form button:hover {
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
-    }
+    .search-box { display: flex; gap: 8px; margin-bottom: 12px; position: relative; }
+    .search-box input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 4px; font-family: 'Inter'; outline: none; }
+    .search-box input:focus { border-color: var(--primary); }
+    .search-box button { padding: 0 16px; background: var(--secondary); color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>🌍 AI-Powered Travel Recommendations</h1>
-
-  <div class="recommend-box">
-    <h2>Your Preferences</h2>
-    <p>📍 <strong>Location:</strong> {{ location }}</p>
-    <p>🎯 <strong>Interest:</strong> {{ interest }}</p>
-    <p>💰 <strong>Budget:</strong> {{ budget }}</p>
-    <p>🚗 <strong>Mode of Travel:</strong> {{ travel_mode }}</p>
+  <div class="nav-bar">
+    <a href="/" class="logo">Travel<span>Mate</span></a>
+    <div><a href="/dashboard" style="font-weight: 600; color: var(--text-muted);">Back to Search</a></div>
   </div>
 
-  <div class="recommend-box">
-    <h2>✨ AI Suggestions</h2>
-    {% if results %}
-      {% set suggestions = results.split('\n') %}
-      {% for line in suggestions %}
-        {% if line.strip() %}
-          <div class="ai-card">
-            <p>{{ line | safe }}</p>
-          </div>
-        {% endif %}
-      {% endfor %}
-    {% else %}
-      <p>⚠ Sorry, I couldn’t fetch AI recommendations right now.</p>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Crafting your detailed itinerary...</div>
+  </div>
+
+  <div class="page-header">
+    <h1>Curated Destinations</h1>
+    <p>Based on your budget of ₹{{ budget }} for {{ start_date }} to {{ end_date }}</p>
+    {% if weather %}
+      <div class="weather-badge">🌡️ Local Weather: {{ weather.temperature }}°C {{ weather.description | capitalize }}</div>
     {% endif %}
   </div>
 
-  <div style="margin-top: 25px;">
-    <button onclick="speakText(`{{ results | safe | replace('`','\\`') | replace('\n', ' ') }}`)" 
-            class="btn-action">
-      🔊 Listen to Recommendations
-    </button>
-
-    <button onclick="stopSpeaking()" class="btn-action stop-btn">
-      ⏹ Stop Voice
-    </button>
-
-    <button onclick="toggleAutoSpeak()" class="btn-action toggle-btn" id="toggleBtn">
-      🔈 Auto-Speak: ON
-    </button>
+  <div class="container">
+    {% if results and results.destinations %}
+      <div class="grid">
+        {% for dest in results.destinations %}
+          <div class="card">
+            <img src="https://loremflickr.com/600/400/{{ dest.name | replace(' ', ',') }},tourism/all" alt="{{ dest.name }}" class="card-img" loading="lazy">
+            <div class="card-body">
+              <div class="card-title">{{ dest.name }}</div>
+              <div class="tags">
+                <span class="tag">{{ dest.type }}</span>
+                <span class="tag cost">Est. {{ dest.estimated_cost }}</span>
+              </div>
+              <p class="card-desc">{{ dest.description }}</p>
+              <button class="btn-plan" data-dest="{{ dest.name }}" onclick="planTrip(this.dataset.dest)">View Itinerary</button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      
+      <div class="maps-section">
+        <div class="map-card" id="distanceMapCard">
+          <h2>Distance Explorer</h2>
+          <button class="maximize-btn" onclick="toggleResultFullscreen('distanceMapCard')">⛶ Maximize</button>
+          <div id="distancesMap" class="map-view"></div>
+        </div>
+        <div class="map-card">
+          <h2>Location Explorer</h2>
+          <div class="search-box">
+            <input type="text" id="mapSearch" placeholder="Search a place...">
+            <button onclick="searchExploreMap()">Search</button>
+          </div>
+          <div id="exploreMap" class="map-view"></div>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-bottom: 40px; display: flex; justify-content: center; gap: 16px;">
+        <button class="btn-plan" style="width:auto; padding: 14px 30px;" id="showMoreBtn" onclick="showMore()">Show More Places</button>
+        <button class="btn-plan" style="width:auto; padding: 14px 30px; background: white; color: var(--primary); border: 2px solid var(--primary);" onclick="window.history.back()">Change Preferences</button>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 60px; background: white; border-radius: 8px; border: 1px solid var(--border);">
+        <p style="color: #e11d48; font-weight: 600; font-size: 18px;">⚠ Could not generate recommendations. Please try again.</p>
+        <button class="btn-plan" style="width:auto; padding: 12px 24px; margin-top: 20px;" onclick="window.history.back()">Go Back</button>
+      </div>
+    {% endif %}
   </div>
 
-  <br><br>
-  <a href="{{ url_for('user_dashboard') }}">🔙 Back to Dashboard</a>
+  <form id="planForm" method="POST" action="{{ url_for('itinerary') }}" style="display:none;">
+    <input type="hidden" name="destination" id="selectedDest">
+    <input type="hidden" name="location" value="{{ location }}">
+    <input type="hidden" name="duration" value="{{ duration }}">
+    <input type="hidden" name="start_date" value="{{ start_date }}">
+    <input type="hidden" name="end_date" value="{{ end_date }}">
+    <input type="hidden" name="budget" value="{{ budget }}">
+    <input type="hidden" name="interest" value="{{ interest }}">
+    <input type="hidden" name="place_types" value="{{ place_types }}">
+    <input type="hidden" name="season" value="{{ season }}">
+    <input type="hidden" name="travel_mode" value="{{ travel_mode }}">
+  </form>
 
-  <!-- 💬 Ask AI More Questions -->
-  <div style="margin-top: 50px;">
-    <h2>💬 Ask AI More Questions</h2>
-    <textarea id="chatInput" placeholder="Ask about destinations, safety, weather, budget tips..." rows="3"
-      style="width: 70%; border-radius: 8px; padding: 10px; border: none;"></textarea><br>
-    <button onclick="sendChat()" style="margin-top:10px; padding: 10px 20px; border:none; border-radius:6px;
-      background:#6366f1; color:white; cursor:pointer;">Ask AI</button>
-
-    <div id="chatResponse" style="margin-top: 20px; text-align: left; width:70%; margin:auto;
-      background: rgba(255,255,255,0.1); padding:15px; border-radius:12px;"></div>
-  </div>
-
-  <!-- ✨ User Feedback Section -->
-  <div class="feedback-form">
-    <h2>💭 Share Your Experience</h2>
-    <form action="{{ url_for('feedback') }}" method="POST">
-      <input type="text" name="name" placeholder="Your Name" required><br>
-      <input type="email" name="email" placeholder="Your Email" required><br>
-      <textarea name="message" rows="4" placeholder="Your feedback about these travel suggestions..." required></textarea><br>
-      <button type="submit">📨 Submit Feedback</button>
-    </form>
-  </div>
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    let englishVoice = null;
-    let voicesLoaded = false;
-    let autoSpeakEnabled = true;
+    function planTrip(destName) {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      document.getElementById('selectedDest').value = destName;
+      document.getElementById('planForm').submit();
+    }
 
-    // ✅ Load voices with retry (fix for Brave/Chrome)
-    async function loadEnglishVoice(retry = 0) {
-      const voices = window.speechSynthesis.getVoices();
+    document.addEventListener('DOMContentLoaded', async () => {
+      const distEl = document.getElementById('distancesMap');
+      const explEl = document.getElementById('exploreMap');
+      if(!distEl || !explEl) return;
 
-      if (voices.length > 0) {
-        englishVoice =
-          voices.find(v => v.name.includes("Google US English")) ||
-          voices.find(v => v.name.includes("Microsoft Aria")) ||
-          voices.find(v => v.lang === "en-IN") ||
-          voices.find(v => v.lang === "en-US") ||
-          voices.find(v => v.name.toLowerCase().includes("english")) ||
-          voices[0];
-        voicesLoaded = true;
-        console.log("✅ Voice loaded:", englishVoice.name);
-        return;
+      // 🎨 Initialize Maps with ID strings
+      const map = L.map('distancesMap').setView([20.5937, 78.9629], 4);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '&copy; CARTO' }).addTo(map);
+      distEl._leaflet_map = map;
+
+      const navMap = L.map('exploreMap').setView([20.5937, 78.9629], 4);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '&copy; CARTO' }).addTo(navMap);
+      explEl._leaflet_map = navMap;
+
+      // Fix for blank tiles
+      setTimeout(() => { map.invalidateSize(); navMap.invalidateSize(); }, 500);
+
+      // 🧭 Handle Origin Geocoding
+      const startLoc = "{{ location }}";
+      let userCoords = null;
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(startLoc)}&limit=1&countrycodes=in`);
+        const data = await res.json();
+        if (data.length > 0) {
+          userCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+          L.circleMarker(userCoords, { color: '#1e293b', radius: 8, fillOpacity: 1 }).addTo(map).bindPopup(`<b>Start:</b> ${startLoc}`).openPopup();
+          navMap.setView(userCoords, 6);
+        }
+      } catch (e) {}
+
+      // 📍 Plot Destinations from AI
+      const destinations = {{ results.destinations | tojson | safe if results and results.destinations else '[]' }};
+      
+      function calcDist(lat1, lon1, lat2, lon2) {
+        const p = 0.017453292519943295;
+        const c = Math.cos;
+        const a = 0.5 - c((lat2 - lat1) * p)/2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))/2;
+        return 12742 * Math.asin(Math.sqrt(a)); 
       }
 
-      if (retry < 10) {
-        console.log("⏳ Waiting for voices...");
-        setTimeout(() => loadEnglishVoice(retry + 1), 300);
-      } else {
-        alert("⚠️ Your browser has speech disabled. Please enable it in Brave or Chrome settings.");
-      }
-    }
-
-    // 🎧 Speak text
-    async function speakText(text) {
-      if (!autoSpeakEnabled) return;
-      if (!text || !text.trim()) {
-        console.warn("⚠️ No text provided to speakText");
-        return;
-      }
-
-      await loadEnglishVoice();
-      window.speechSynthesis.cancel();
-
-      const cleanText = text
-        .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "")
-        .replace(/<[^>]+>/g, "")
-        .replace(/[*#`_~\-•→]/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const utter = new SpeechSynthesisUtterance(cleanText);
-      utter.voice = englishVoice;
-      utter.lang = englishVoice.lang || "en-IN";
-      utter.rate = 0.93;
-      utter.pitch = 1.02;
-      utter.volume = 1.0;
-      utter.onerror = e => console.error("Speech error:", e);
-      utter.onend = () => console.log("✅ Finished speaking.");
-      window.speechSynthesis.speak(utter);
-    }
-
-    // 🛑 Stop voice
-    function stopSpeaking() {
-      window.speechSynthesis.cancel();
-      console.log("🛑 Speech stopped.");
-    }
-
-    // 🎚️ Toggle Auto-Speak
-    function toggleAutoSpeak() {
-      autoSpeakEnabled = !autoSpeakEnabled;
-      const btn = document.getElementById("toggleBtn");
-      btn.textContent = autoSpeakEnabled ? "🔈 Auto-Speak: ON" : "🔇 Auto-Speak: OFF";
-      btn.style.background = autoSpeakEnabled
-        ? "linear-gradient(135deg, #14b8a6, #0d9488)"
-        : "linear-gradient(135deg, #475569, #334155)";
-    }
-
-    // 💬 Send Chat
-    async function sendChat() {
-      const msg = document.getElementById("chatInput").value.trim();
-      if (!msg) return;
-
-      const response = await fetch("/ai_chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ msg }),
+      destinations.forEach(dest => {
+        if (dest.lat && dest.lng) {
+          const destCoords = [dest.lat, dest.lng];
+          let distStr = "";
+          if (userCoords) {
+            const distance = calcDist(userCoords[0], userCoords[1], dest.lat, dest.lng);
+            distStr = `<br><b>Distance:</b> ${distance.toFixed(1)} km`;
+            L.polyline([userCoords, destCoords], {color: '#ea580c', weight: 2, dashArray: '5, 10'}).addTo(map)
+             .bindTooltip(`${distance.toFixed(1)} km`, {permanent: false, className: 'distance-tooltip'});
+          }
+          L.marker(destCoords).addTo(map).bindPopup(`<b>${dest.name}</b>${distStr}`);
+        }
       });
 
-      const data = await response.json();
-      const replyBox = document.getElementById("chatResponse");
-      replyBox.innerHTML = "<b>AI:</b> " + data.reply;
-      speakText(data.reply);
-    }
-
-    // 🔄 Load voices once page interacts
-    document.addEventListener("click", () => {
-      if (!voicesLoaded) {
-        loadEnglishVoice();
-      }
+      // 🖱️ Global Click Listener
+      [map, navMap].forEach(m => {
+          m.on('click', async (e) => {
+              const { lat, lng } = e.latlng;
+              try {
+                  const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                  const data = await res.json();
+                  L.popup().setLatLng(e.latlng).setContent(`<b>Location Found:</b><br>${data.display_name || 'Unknown'}`).openOn(m);
+              } catch(err) {}
+          });
+      });
     });
 
-    window.speechSynthesis.onvoiceschanged = loadEnglishVoice;
+    function toggleResultFullscreen(cardId) {
+      const card = document.getElementById(cardId);
+      card.classList.toggle('fullscreen');
+      const btn = card.querySelector('.maximize-btn');
+      if (card.classList.contains('fullscreen')) {
+        btn.innerHTML = '✖ Close';
+      } else {
+        btn.innerHTML = '⛶ Maximize';
+      }
+      setTimeout(() => { 
+        const mapView = card.querySelector('.map-view');
+        if (mapView && mapView._leaflet_map) {
+           mapView._leaflet_map.invalidateSize(); 
+        }
+      }, 300);
+    }
+
+    async function searchExploreMap() {
+      const q = document.getElementById('mapSearch').value;
+      if (!q) return;
+      const mapObj = document.getElementById('exploreMap')._leaflet_map;
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=in`);
+        const data = await res.json();
+        if (data.length > 0) {
+          const latlng = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+          if(window._navMarker) mapObj.removeLayer(window._navMarker);
+          window._navMarker = L.marker(latlng).addTo(mapObj).bindPopup(`<b>${data[0].display_name}</b>`).openPopup();
+          mapObj.setView(latlng, 12);
+        } else { alert("Location not found."); }
+      } catch(e) { alert("Error searching location."); }
+    }
+
+    async function showMore() {
+      const btn = document.getElementById('showMoreBtn');
+      const grid = document.querySelector('.grid');
+      const currentPlaces = Array.from(document.querySelectorAll('.card-title')).map(el => el.innerText);
+      
+      btn.disabled = true;
+      btn.innerText = 'Loading...';
+      
+      try {
+        const res = await fetch('/recommend/more', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ exclude: currentPlaces })
+        });
+        const data = await res.json();
+        
+        if (data.destinations && data.destinations.length > 0) {
+          data.destinations.forEach(dest => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+              <img src="https://loremflickr.com/600/400/${dest.name.replace(/ /g, ',')},tourism/all" alt="${dest.name}" class="card-img" loading="lazy">
+              <div class="card-body">
+                <div class="card-title">${dest.name}</div>
+                <div class="tags">
+                  <span class="tag">${dest.type}</span>
+                  <span class="tag cost">Est. ${dest.estimated_cost}</span>
+                </div>
+                <p class="card-desc">${dest.description}</p>
+                <button class="btn-plan" onclick="planTrip('${dest.name.replace(/'/g, "\\'")}')">View Itinerary</button>
+              </div>
+            `;
+            grid.appendChild(card);
+            
+            // Add to map
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest.name)}&limit=1&countrycodes=in`)
+              .then(r => r.json())
+              .then(geo => {
+                if(geo.length > 0) {
+                  const latlng = [parseFloat(geo[0].lat), parseFloat(geo[0].lon)];
+                  const mapEl = document.getElementById('distancesMap');
+                  L.marker(latlng).addTo(mapEl._leaflet_map).bindPopup(`<b>${dest.name}</b>`);
+                }
+              });
+          });
+        } else {
+          alert("No more recommendations found.");
+          btn.style.display = 'none';
+        }
+      } catch (e) {
+        alert("Error fetching more places.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Show More Places';
+      }
+    }
   </script>
+
+  <!-- Chatbot UI -->
+  <div class="chatbot-container">
+    <div class="chatbot-toggle">
+      <svg viewBox="0 0 24 24"><path d="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M20,16H5.2L4,17.2V4h16V16z M7,9h10v2H7V9z M7,12h7v2H7V12z"/></svg>
+    </div>
+    <div class="chatbot-window">
+      <div class="chatbot-header">
+        <h3>Travel AI Assistant</h3>
+        <span class="chatbot-close">&times;</span>
+      </div>
+      <div class="chatbot-messages">
+        <div class="message bot">👋 Hi! I'm your AI travel assistant. How can I help you plan your journey today?</div>
+      </div>
+      <div class="chatbot-input-area">
+        <input type="text" class="chatbot-input" placeholder="Ask me anything...">
+        <button class="chatbot-send">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='javascript/chat.js') }}"></script>
 </body>
 </html>

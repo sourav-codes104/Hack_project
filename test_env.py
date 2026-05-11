@@ -3,4 +3,5 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-print("OPENAI_API_KEY =", os.getenv("OPENAI_API_KEY"))
+print("FILE EXISTS:", os.path.exists(".env"))
+print("VALUE:", os.getenv("GEMINI_API_KEY"))
