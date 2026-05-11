@@ -1,7 +1,6 @@
 import json
 import sqlite3
 from utils.database_setup import get_db_connection
-from model.recommender import get_recommendations
 
 class User:
     def __init__(self, userid=None, name=None, email=None, budget=None, travel_days=None, password=None):
@@ -220,6 +219,8 @@ class RecommendationEngine:
     @staticmethod
     def suggestDestinations(location, interest, budget, travel_mode, duration, place_types="", season="", start_date="", end_date=""):
         """Get 5 destination suggestions from AI."""
+        from model.recommender import get_recommendations
+
         constraints = RecommendationEngine.analyzePreferences(budget, duration, interest, place_types, season)
         RecommendationEngine.matchDestinationData(location, constraints)
         return get_recommendations(location, interest, budget, travel_mode, duration, place_types, season, start_date, end_date)

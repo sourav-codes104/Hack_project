@@ -1,13 +1,12 @@
-from model.ner_utils import extract_places
 import os
 import json
 import re
 import google.generativeai as genai
 from dotenv import load_dotenv
-from model.ml_recommender import get_ml_recommendations, get_ml_itinerary
-from model.trained_recommender import get_trained_recommendations
 
 def detect_location_from_text(user_input):
+    from model.ner_utils import extract_places
+
     places = extract_places(user_input)
     if places:
         return places[0]  # just take first one
@@ -27,6 +26,9 @@ def get_recommendations(location, interest, budget, travel_mode="car", duration=
     Hierarchy: 1. Trained ML Model -> 2. Spacy Semantic -> 3. Gemini AI
     """
     try:
+        from model.ml_recommender import get_ml_recommendations
+        from model.trained_recommender import get_trained_recommendations
+
         # --- 🚀 LEVEL 1: TRAINED ML MODEL (Instant) ---
         print("--- 🔮 Attempting Trained ML Model ---")
         trained_results = get_trained_recommendations(f"{interest} {place_types}", budget, duration)
@@ -175,6 +177,8 @@ def get_more_recommendations(location, interest, budget, travel_mode, duration, 
     Uses Local ML first, then falls back to Gemini.
     """
     try:
+        from model.trained_recommender import get_trained_recommendations
+
         # --- 🚀 LEVEL 1: TRAINED ML MODEL (Instant) ---
         print("--- 🔮 Attempting Trained ML Model (More) ---")
         trained_results = get_trained_recommendations(f"{interest} {place_types}", budget, duration, exclude_places=exclude_places)
@@ -247,6 +251,8 @@ def get_detailed_itinerary(location, destination, interest, budget, travel_mode,
     Uses Local ML/Templates first, then falls back to Gemini AI.
     """
     try:
+        from model.ml_recommender import get_ml_itinerary
+
         print(f"--- 🤖 Attempting ML Itinerary for {destination} ---")
         ml_itinerary = get_ml_itinerary(destination, duration, budget, start_date)
         

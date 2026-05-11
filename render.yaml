@@ -6,9 +6,11 @@ services:
     region: oregon
     branch: main
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --workers 1 --threads 2 --timeout 120
     healthCheckPath: /test
     envVars:
+      - key: GUNICORN_CMD_ARGS
+        value: --bind=0.0.0.0:10000 --access-logfile -
       - key: SECRET_KEY
         generateValue: true
       - key: GEMINI_API_KEY

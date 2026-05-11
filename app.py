@@ -5,10 +5,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 from utils.database_setup import init_db, save_feedback
 from model.classes import User, RecommendationEngine, TravelPlan, Admin
-from model.chatbot_logic import get_chat_response
-from model.recommender import get_recommendations, get_more_recommendations, get_detailed_itinerary
 from utils.weather_app import get_weather
-from model.conversational_ai import chat_with_gemini
 from authlib.integrations.flask_client import OAuth
 
 # ✅ DB path constant
@@ -214,6 +211,8 @@ def admin_dashboard():
 # ---------------- CHATBOT ----------------
 @app.route('/ai_chat', methods=['POST'])
 def ai_chat():
+    from model.conversational_ai import chat_with_gemini
+
     user_msg = request.json.get('msg', '')
     reply = chat_with_gemini(user_msg)
 
@@ -297,6 +296,8 @@ def recommend():
 # ---------------- SHOW MORE PLACES (AJAX) ----------------
 @app.route('/recommend/more', methods=['POST'])
 def recommend_more():
+    from model.recommender import get_more_recommendations
+
     data = request.json
     exclude_places = data.get('exclude', [])
     
@@ -322,6 +323,8 @@ def recommend_more():
 # ---------------- DETAILED ITINERARY (Selected Place) ----------------
 @app.route('/itinerary', methods=['POST'])
 def itinerary():
+    from model.recommender import get_detailed_itinerary
+
     destination = request.form.get('destination', '')
     location = request.form.get('location', '')
     interest = request.form.get('interest', '')

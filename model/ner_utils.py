@@ -1,10 +1,19 @@
 import spacy
 
-# Load English NLP model
-nlp = spacy.load("en_core_web_lg")  # <-- use large model for better accuracy
+nlp = None
+
+
+def get_nlp():
+    global nlp
+    if nlp is None:
+        try:
+            nlp = spacy.load("en_core_web_sm")
+        except Exception:
+            nlp = spacy.blank("en")
+    return nlp
 
 def extract_places(text):
-    doc = nlp(text)
+    doc = get_nlp()(text)
 
     # Consider more labels that spaCy sometimes misclassifies for locations
     location_labels = ["GPE", "LOC", "FAC", "ORG", "PERSON", "NORP"]

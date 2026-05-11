@@ -3,16 +3,18 @@ import json
 import os
 import re
 
-# Load Spacy model
-try:
-    # Use the large model for better semantic understanding if available
-    nlp = spacy.load("en_core_web_lg")
-except:
-    try:
-        nlp = spacy.load("en_core_web_sm")
-    except:
-        nlp = None
-        print("Warning: Spacy model could not be loaded. ML similarity will be disabled.")
+nlp = None
+
+
+def get_nlp():
+    global nlp
+    if nlp is None:
+        try:
+            nlp = spacy.load("en_core_web_sm")
+        except Exception:
+            nlp = None
+            print("Warning: Spacy model could not be loaded. ML similarity will be disabled.")
+    return nlp
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'destinations.json')
 
@@ -55,12 +57,14 @@ def get_ml_recommendations(location, interest, budget, duration, place_types="",
     
     scored_destinations = []
     
-    if nlp and user_query:
-        user_doc = nlp(user_query.lower())
+    nlp_model = get_nlp()
+
+    if nlp_model and user_query:
+        user_doc = nlp_model(user_query.lower())
         for dest in destinations:
             # Create a rich description for matching
             dest_text = f"{dest['name']} {dest['type']} {dest['description']} {dest['tags']}".lower()
-            dest_doc = nlp(dest_text)
+            dest_doc = nlp_model(dest_text)
             
             # Calculate similarity
             similarity = user_doc.similarity(dest_doc)
